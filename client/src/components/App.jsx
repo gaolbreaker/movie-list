@@ -34,13 +34,13 @@ class App extends React.Component {
   addBtnClicked(e) {
     e.preventDefault();
     var addString = document.querySelector('.add-movie-box').value;
-    if(!!addString) {
+    if(!!addString && !this.state.currentList.map((e) => e.title).includes(addString)) {
       var newWatched = this.state.watched;
       newWatched[addString] = false;
       var newMovieList = [...this.state.currentList];
       newMovieList.push({title: addString});
       console.log(newMovieList);
-      this.setState({currentList: newMovieList, listToDisplay: newMovieList, watched: newWatched});
+      this.setState({currentList: newMovieList, listToDisplay: newMovieList, watched: newWatched}, this.refreshToggle);
       document.querySelector('.add-movie-box').value = '';
     }
   }
@@ -55,40 +55,48 @@ class App extends React.Component {
     } else {
       newWatched[title.textContent] = !newWatched[title.textContent];
     }
-    this.setState({watched: newWatched});
-    console.log(newWatched);
+    this.setState({watched: newWatched}, this.refreshToggle);
+
   }
 
   displayWatchedBtnClicked(e) {
     // toggle this.state.displayWatched and re-render
-    this.setState({displayWatched: !this.state.displayWatched});
-    // filter currentList -> listToDisplay
-    // if both displayWatched and displayToWatch are false
-    if (!this.state.displayWatched && !this.state.displayToWatch) {
-        // listToDisplay should be empty
-        this.setState({listToDisplay: []});
-        // else if both displayWatched and displayToWatch are true
-    } else if (this.state.displayWatched && this.state.displayToWatch) {
-        // listToDisplay should be the same as currentList
-        var currentListClone = [...this.state.currentList];
+    this.setState({displayWatched: !this.state.displayWatched}, this.refreshToggle);
 
-        this.setState({listToDisplay: currentListClone});
-        // else if displayWatched is true and displayToWatch is false
-    } else if (this.state.displayWatched && !this.state.displayToWatch) {
-        // listToDisplay should ONLY display movies in watched
-        var currentListClone = [...this.state.currentList];
-        // ***** WORK HERE *******
-        var filteredMovieList = currentListClone.filter((e) => e.title.includes(searchString));
-        this.setState({listToDisplay: currentListClone});
-      // else if displayWatched is false and displayToWatch is true
-    }
-        // listToDisplay should ONLY display movies NOT in watched
 
   }
 
   displayToWatchBtnClicked(e) {
-    this.setState({displayToWatch: !this.state.displayToWatch});
+    this.setState({displayToWatch: !this.state.displayToWatch}, this.refreshToggle);
 
+
+  }
+
+  refreshToggle() {
+// filter currentList -> listToDisplay
+    // if both displayWatched and displayToWatch are false
+    if (!this.state.displayWatched && !this.state.displayToWatch) {
+      // listToDisplay should be empty
+      this.setState({listToDisplay: []});
+      // else if both displayWatched and displayToWatch are true
+  } else if (this.state.displayWatched && this.state.displayToWatch) {
+      // listToDisplay should be the same as currentList
+      let currentListClone = [...this.state.currentList];
+
+      this.setState({listToDisplay: currentListClone});
+      // else if displayWatched is true and displayToWatch is false
+  } else if (this.state.displayWatched && !this.state.displayToWatch) {
+      // listToDisplay should ONLY display movies true in watched
+      let currentListClone = [...this.state.currentList];
+      let filteredMovieList = currentListClone.filter((e) => this.state.watched[e.title]);
+      this.setState({listToDisplay: filteredMovieList});
+    // else if displayWatched is false and displayToWatch is true
+  } else if (!this.state.displayWatched && this.state.displayToWatch) {
+      // listToDisplay should ONLY display movies NOT true in watched
+      let currentListClone = [...this.state.currentList];
+      let filteredMovieList = currentListClone.filter((e) => !this.state.watched[e.title]);
+      this.setState({listToDisplay: filteredMovieList});
+  }
   }
 
   render() {
